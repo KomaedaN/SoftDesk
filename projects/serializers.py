@@ -1,7 +1,9 @@
+import requests
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 
 from projects.models import Projects, Contributors, Issue, Comment
+from authentication.models import User
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -10,7 +12,15 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'type', 'author_user_id']
 
 
+class ContributorSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Contributors
+        fields = ['user_id', 'permission']
+
+
 class CreateProjectSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Projects
         fields = ['title', 'description', 'type', 'author_user_id']
@@ -27,6 +37,13 @@ class CreateProjectSerializer(serializers.ModelSerializer):
 
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
+    contributors = serializers.SerializerMethodField()
+
     class Meta:
         model = Projects
-        fields = ['id', 'title', 'description', 'type', 'author_user_id']
+        fields = ['id', 'title', 'description', 'type', 'author_user_id', 'contributors']
+
+    def get_contributors(self, instance):
+        queryset = instance.contributors.filter(project_id=instance.id)
+        serializer = ContributorSerializer(queryset, many=True)
+        return serializer.data
