@@ -13,17 +13,15 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class ContributorSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Contributors
         fields = ['user_id', 'permission']
 
 
 class CreateProjectSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Projects
-        fields = ['title', 'description', 'type', 'author_user_id']
+        fields = ['title', 'description', 'type']
 
     """def create(self, data):
         project = Projects.objects.create(
@@ -47,3 +45,10 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
         queryset = instance.contributors.filter(project_id=instance.id)
         serializer = ContributorSerializer(queryset, many=True)
         return serializer.data
+
+
+class UpdateProjectSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Projects
+        fields = ['title', 'description', 'type']
