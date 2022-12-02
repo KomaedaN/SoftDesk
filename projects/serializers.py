@@ -23,16 +23,6 @@ class CreateProjectSerializer(serializers.ModelSerializer):
         model = Projects
         fields = ['title', 'description', 'type']
 
-    """def create(self, data):
-        project = Projects.objects.create(
-            title=data['title'],
-            description=data['description'],
-            type=data['type'],
-            author_user_id=self.request.user.id,
-        )
-        project.save()
-        return project"""
-
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
     contributors = serializers.SerializerMethodField()
@@ -52,3 +42,7 @@ class UpdateProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Projects
         fields = ['title', 'description', 'type']
+
+
+class DestroyProjectSerializer(serializers.ModelSerializer):
+    pass

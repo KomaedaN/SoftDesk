@@ -6,13 +6,14 @@ from rest_framework.permissions import IsAuthenticated
 
 from projects.models import Projects, Contributors, Issue, Comment
 from projects.serializers import ProjectSerializer, CreateProjectSerializer, ProjectDetailSerializer, \
-    UpdateProjectSerializer
+    UpdateProjectSerializer, DestroyProjectSerializer
 
 
 class MultipleSerializerMixin:
     create_serializer_class = None
     retrieve_serializer_class = None
     update_serializer_class = None
+    destroy_serializer_class = None
 
     def get_serializer_class(self):
         if self.action == 'retrieve' and self.retrieve_serializer_class is not None:
@@ -21,6 +22,8 @@ class MultipleSerializerMixin:
             return self.create_serializer_class
         elif self.action == 'update' and self.update_serializer_class is not None:
             return self.update_serializer_class
+        elif self.action == 'destroy' and self.destroy_serializer_class is not None:
+            return self.destroy_serializer_class
 
         return super().get_serializer_class()
 
@@ -34,7 +37,7 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Projects.objects.filter(author_user_id=self.request.user)
+        return Projects.objects.filter(contributors__user_id=self.request.user)
 
     def create(self, request, *args, **kwargs):
         if request.method == 'POST':
@@ -65,3 +68,11 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
                     type=request.data['type'],
                 )
                 return Response(request.data)
+
+    def destroy(self, request, *args, **kwargs):
+        if request.method == 'DELETE':
+            if request.user == self.get_object().author_user_id:
+                instance = self.get_object()
+                instance.delete()
+                return Response('project delete')
+            return Response('You are not the author')
