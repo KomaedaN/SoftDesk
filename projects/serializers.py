@@ -38,11 +38,12 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
 
 
 class UpdateProjectSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Projects
         fields = ['title', 'description', 'type']
 
 
-class DestroyProjectSerializer(serializers.ModelSerializer):
-    pass
+class UserContributorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contributors
+        fields = ['id', 'user_id', 'permission']

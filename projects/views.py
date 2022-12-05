@@ -3,10 +3,12 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
 
+from authentication.models import User
 from projects.models import Projects, Contributors, Issue, Comment
 from projects.serializers import ProjectSerializer, CreateProjectSerializer, ProjectDetailSerializer, \
-    UpdateProjectSerializer, DestroyProjectSerializer
+    UpdateProjectSerializer, ContributorSerializer, UserContributorSerializer
 
 
 class MultipleSerializerMixin:
@@ -76,3 +78,39 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
                 instance.delete()
                 return Response('project delete')
             return Response('You are not the author')
+
+
+class ContributorViewset(MultipleSerializerMixin, ModelViewSet):
+    serializer_class = UserContributorSerializer
+    create_serializer_class = ContributorSerializer
+
+    def get_queryset(self):
+        return Contributors.objects.filter(project_id=self.kwargs['project_pk'])
+
+    def create(self, request, *args, **kwargs):
+
+        if request.method == 'POST':
+            if self.create_serializer_class is not None:
+
+                try:
+                    project_users = Contributors.objects.get(user_id=request.POST['user_id'],
+                                                             project_id=self.kwargs['project_pk'])
+                    return Response('Error: this contributor is already in you project')
+
+                except:
+                    contributor = Contributors.objects.create(
+                        user_id=User.objects.get(id=request.POST['user_id']),
+                        project_id=Projects.objects.get(id=self.kwargs['project_pk']),
+                        permission=request.data['permission'],
+                    )
+                    contributor.save()
+                    return Response(request.data)
+
+    def destroy(self, request, *args, **kwargs):
+        current_project = Projects.objects.get(id=self.kwargs['project_pk'])
+        if request.user == current_project.author_user_id:
+            instance = self.get_object()
+            instance.delete()
+            return Response('contributor removed')
+        else:
+            return Response('You are not the project owner')
