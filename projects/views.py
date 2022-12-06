@@ -5,10 +5,11 @@ from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 
+from projects.permissions import ProjectPermission, ContributorPermission
 from authentication.models import User
 from projects.models import Projects, Contributors, Issue, Comment
 from projects.serializers import ProjectSerializer, CreateProjectSerializer, ProjectDetailSerializer, \
-    UpdateProjectSerializer, ContributorSerializer, UserContributorSerializer
+    UpdateProjectSerializer, ContributorSerializer, UserContributorSerializer, GetIssueSerializer
 
 
 class MultipleSerializerMixin:
@@ -36,48 +37,45 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
     retrieve_serializer_class = ProjectDetailSerializer
     update_serializer_class = UpdateProjectSerializer
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ProjectPermission]
 
     def get_queryset(self):
         return Projects.objects.filter(contributors__user_id=self.request.user)
 
     def create(self, request, *args, **kwargs):
         if request.method == 'POST':
-            if self.create_serializer_class is not None:
-                project = Projects.objects.create(
-                    title=request.data['title'],
-                    description=request.data['description'],
-                    type=request.data['type'],
-                    author_user_id=request.user,
-                )
-                project.save()
+            project = Projects.objects.create(
+                title=request.data['title'],
+                description=request.data['description'],
+                type=request.data['type'],
+                author_user_id=request.user,
+            )
+            project.save()
 
-                contributor = Contributors.objects.create(
-                    user_id=request.user,
-                    project_id=project,
-                    permission='AUTHOR',
-                )
-                contributor.save()
-                return Response(request.data)
+            contributor = Contributors.objects.create(
+                user_id=request.user,
+                project_id=project,
+                permission='AUTHOR',
+            )
+            contributor.save()
+            return Response(request.data)
 
     def update(self, request, *args, **kwargs):
         if request.method == 'PUT':
-            if self.update_serializer_class is not None:
-                instance = self.get_object()
-                update_project = Projects.objects.filter(id=instance.id).update(
-                    title=request.data['title'],
-                    description=request.data['description'],
-                    type=request.data['type'],
-                )
-                return Response(request.data)
+            instance = self.get_object()
+            update_project = Projects.objects.filter(id=instance.id).update(
+                title=request.data['title'],
+                description=request.data['description'],
+                type=request.data['type'],
+            )
+            return Response(request.data)
 
     def destroy(self, request, *args, **kwargs):
         if request.method == 'DELETE':
-            if request.user == self.get_object().author_user_id:
-                instance = self.get_object()
-                instance.delete()
-                return Response('project delete')
-            return Response('You are not the author')
+            instance = self.get_object()
+            id = instance.id
+            instance.delete()
+            return Response(f'Project: {id} - {instance.title}, deleted')
 
 
 class ContributorViewset(MultipleSerializerMixin, ModelViewSet):
@@ -96,7 +94,6 @@ class ContributorViewset(MultipleSerializerMixin, ModelViewSet):
                     project_users = Contributors.objects.get(user_id=request.POST['user_id'],
                                                              project_id=self.kwargs['project_pk'])
                     return Response('Error: this contributor is already in you project')
-
                 except:
                     contributor = Contributors.objects.create(
                         user_id=User.objects.get(id=request.POST['user_id']),
@@ -114,3 +111,10 @@ class ContributorViewset(MultipleSerializerMixin, ModelViewSet):
             return Response('contributor removed')
         else:
             return Response('You are not the project owner')
+
+
+class IssueViewset(MultipleSerializerMixin, ModelViewSet):
+    serializer_class = GetIssueSerializer
+
+    def get_queryset(self):
+        return Issue.objects.filter(project_id=self.kwargs['project_pk'])

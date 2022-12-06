@@ -47,3 +47,9 @@ class UserContributorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contributors
         fields = ['id', 'user_id', 'permission']
+
+
+class GetIssueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Issue
+        fields = '__all__'
