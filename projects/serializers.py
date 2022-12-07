@@ -53,3 +53,15 @@ class GetIssueSerializer(serializers.ModelSerializer):
     class Meta:
         model = Issue
         fields = '__all__'
+
+
+class CreateIssueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Issue
+        fields = ['title', 'description', 'tag', 'priority', 'status', 'assignee_user_id']
+
+
+class UpdateIssueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Issue
+        fields = ['title', 'description', 'tag', 'priority', 'status', 'assignee_user_id']
