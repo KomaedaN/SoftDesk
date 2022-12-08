@@ -5,12 +5,13 @@ from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 
-from projects.permissions import ProjectPermission, ContributorPermission, IssuePermission
+from projects.permissions import ProjectPermission, ContributorPermission, IssuePermission, CommentsPermission
 from authentication.models import User
 from projects.models import Projects, Contributors, Issue, Comment
 from projects.serializers import ProjectSerializer, CreateProjectSerializer, ProjectDetailSerializer, \
     UpdateProjectSerializer, ContributorSerializer, UserContributorSerializer, GetIssueSerializer, \
-    CreateIssueSerializer, UpdateIssueSerializer
+    CreateIssueSerializer, UpdateIssueSerializer, GetCommentsSerializer, CreateCommentsSerializer, \
+    UpdateCommentsSerializer, CommentDetailSerializer
 
 
 class MultipleSerializerMixin:
@@ -160,3 +161,40 @@ class IssueViewset(MultipleSerializerMixin, ModelViewSet):
         instance = self.get_object()
         instance.delete()
         return Response('issue removed')
+
+
+class CommentsViewset(MultipleSerializerMixin, ModelViewSet):
+    serializer_class = GetCommentsSerializer
+    create_serializer_class = CreateCommentsSerializer
+    update_serializer_class = UpdateCommentsSerializer
+    retrieve_serializer_class = CommentDetailSerializer
+
+    permission_classes = [IsAuthenticated, CommentsPermission]
+
+    def get_queryset(self):
+        return Comment.objects.filter(issue_id=self.kwargs['issue_pk'])
+
+    def create(self, request, *args, **kwargs):
+        current_issue = self.kwargs['issue_pk']
+
+        comment = Comment.objects.create(
+            description=request.POST['description'],
+            author_user_id=request.user,
+            issue_id=Issue.objects.get(id=current_issue),
+        )
+
+        comment.save()
+        return Response(f'Comment added ! id: {comment.id} ')
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        update_comment = Comment.objects.filter(id=instance.id).update(
+            description=request.data['description'],
+        )
+        return Response(f'Comment updated ! description: {request.data["description"]}')
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response('comment removed')

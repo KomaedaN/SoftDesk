@@ -65,3 +65,27 @@ class UpdateIssueSerializer(serializers.ModelSerializer):
     class Meta:
         model = Issue
         fields = ['title', 'description', 'tag', 'priority', 'status', 'assignee_user_id']
+
+
+class GetCommentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['id', 'author_user_id', 'description']
+
+
+class CreateCommentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['description']
+
+
+class UpdateCommentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['description']
+
+
+class CommentDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = '__all__'
