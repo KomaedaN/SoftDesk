@@ -98,9 +98,10 @@ class ContributorViewset(MultipleSerializerMixin, ModelViewSet):
                     project_users = Contributors.objects.get(user_id=request.POST['user_id'],
                                                              project_id=self.kwargs['project_pk'])
                     return Response('Error: this contributor is already in you project')
+
                 except:
                     contributor = Contributors.objects.create(
-                        user_id=User.objects.get(id=request.POST['user_id']),
+                        user_id=User.objects.get(username=request.POST['user_id']),
                         project_id=Projects.objects.get(id=self.kwargs['project_pk']),
                         permission=request.data['permission'],
                     )

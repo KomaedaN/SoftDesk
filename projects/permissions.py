@@ -71,13 +71,13 @@ class CommentsPermission(BasePermission):
             if current_project == current_issue.project_id:
                 user_list = []
                 current_contributors = Contributors.objects.filter(project_id=current_project)
-                for user in current_contributors:
-                    contributor = user.user_id
+                for i in range(len(current_contributors)):
+                    contributor = current_contributors[i].user_id
                     user_list.append(contributor)
-                    if request.user in user_list:
-                        return True
-                    else:
-                        return False
+                if request.user in user_list:
+                    return True
+                else:
+                    return False
             else:
                 return False
 

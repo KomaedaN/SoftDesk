@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-
+from rest_framework.response import Response
 from authentication.models import User
 
 
@@ -17,6 +17,7 @@ class SignupSerializer(ModelSerializer):
             password=data['password'],
         )
         user.save()
+
         return user
 
 
