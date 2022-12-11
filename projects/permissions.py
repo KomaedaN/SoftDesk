@@ -26,7 +26,20 @@ class ProjectPermission(BasePermission):
 class ContributorPermission(BasePermission):
 
     def has_permission(self, request, view):
-        action = []
+        action = ['list', 'create', 'destroy']
+
+        if view.action in action:
+            user_list = []
+            current_user = request.user
+            current_project = Projects.objects.get(pk=view.kwargs['project_pk'])
+            current_contributors = Contributors.objects.filter(project_id=current_project)
+            for user in current_contributors:
+                contributor = user.user_id
+                user_list.append(contributor)
+            if request.user in user_list:
+                return True
+            else:
+                return False
 
 
 class IssuePermission(BasePermission):
