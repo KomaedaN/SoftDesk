@@ -10,6 +10,9 @@
 
 # Endpoints :
 you can find all documentation here : (https://documenter.getpostman.com/view/17797877/2s8YzTT2a6)
-
+ 
+you can login with a test user : 
+- Username = testuser
+- Password = motdepassetest
 
 
