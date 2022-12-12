@@ -90,24 +90,13 @@ class ContributorViewset(MultipleSerializerMixin, ModelViewSet):
         return Contributors.objects.filter(project_id=self.kwargs['project_pk'])
 
     def create(self, request, *args, **kwargs):
-        try:
-
-            current_user = User.objects.filter(username=request.POST['user_id'])
-            for user in current_user:
-                id = user.id
-
-            project_users = Contributors.objects.filter(user_id=id,
-                                                        project_id=self.kwargs['project_pk'])
-            return Response('Error: this contributor is already in you project')
-
-        except:
-            contributor = Contributors.objects.create(
-                user_id=User.objects.get(username=request.POST['user_id']),
-                project_id=Projects.objects.get(id=self.kwargs['project_pk']),
-                permission=request.data['permission'],
-            )
-            contributor.save()
-            return Response(request.data)
+        contributor = Contributors.objects.create(
+            user_id=User.objects.get(username=request.POST['user_id']),
+            project_id=Projects.objects.get(id=self.kwargs['project_pk']),
+            permission=request.data['permission'],
+        )
+        contributor.save()
+        return Response(request.data)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
