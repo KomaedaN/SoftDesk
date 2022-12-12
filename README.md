@@ -15,4 +15,10 @@ you can login with a test user :
 - Username = testuser
 - Password = motdepassetest
 
+with postman create an environement :
+- VARIABLE = Authorization, CURRENT VALUE = Bearer (add your token here when you login).
 
+then add in your request header :
+- KEY = Authorization, VALUE = {{Authorization}}
+
+select your new environment when you try your request
