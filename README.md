@@ -1,5 +1,3 @@
-# SoftDesk
-
 # Setup :
 1 - create virtual env : "python -m venv env"
 
